@@ -191,46 +191,48 @@ controller.on('slash_command', function (slashCommand, message) {
                     break;
 
                 case "add":
-                    var incomingUser = null;
-                    controller.storage.users.get(message.user, function(err, user) {
-
-                        if (!user || !user.userName || !user.password) {
-                            slashCommand.replyPrivate(message, "I do not have your credentials to login, Try typing `/cats login <username> <password>` to login");
-                        }
-                        else {
-                            incomingUser = user;
-                        }
-
-                    });
-
-                    if (!incomingUser) {
-                        performLogin(slashCommand, message, incomingUser.userName, incomingUser.password);
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                    var comment = "";
-                    for (var i = 5; i < text.length; i++) {
-                        comment += text[i] + " ";
-                    };
-                    if (!text[1] || moment(text[1], "YYYYMMDD", true).isValid() || !text[2] || !text[3] || !text[4] || !comment) {
-                        slashCommand.replyPrivate(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
-                        break;
-                    }
-
-                    var incomingDate = text[1];
-                    var incomingOrder = text[2];
-                    var incomingSuborder = text[2] + "-" + text[3];
-                    var incomingHours = text[4];
-                    var formattedComment = comment.substring(0,50);
-                    var postTimeSuccess = true;
-                    slashCommand.replyPrivate(message, "Attempting to add your time", function() {
+                    var addTimeSuccess = true;
+                    slashCommand.replyPrivate(message, "Attempting to add your hours to cats..", function() {
                         controller.storage.users.get(message.user, function(err, user) {
-                            postTimeSuccess = performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
+                            if (user && user.userName && user.password) {
+                                var loginSuccess = true;
+                                loginSuccess = performLogin(slashCommand, message, user.userName, user.password);
+                                if (loginSuccess) {
+                                    var comment = "";
+                                    for (var i = 5; i < text.length; i++) {
+                                        comment += text[i] + " ";
+                                    };
+                                    if (!text[1] || moment(text[1], "YYYYMMDD", true).isValid() || !text[2] || !text[3] || !text[4] || !comment) {
+                                        slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
+                                        addTimeSuccess = false;
+                                    }
+                                    else {
+                                        var incomingDate = text[1];
+                                        var incomingOrder = text[2];
+                                        var incomingSuborder = text[2] + "-" + text[3];
+                                        var incomingHours = text[4];
+                                        var formattedComment = comment.substring(0,50);
+                                        var postTimeSuccess = true;
+                                        slashCommand.replyPrivateDelayed(message, "Attempting to add your time", function() {
+                                            controller.storage.users.get(message.user, function(err, user) {
+                                                postTimeSuccess = performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
+                                            });
+                                        });
+                                    }
+                                }
+                                else {
+                                    console.log("User:", user);
+                                    slashCommand.replyPrivateDelayed(message, "I do not have your right credentials to login, Try typing `/cats login <username> <password>` to login");
+                                }
+                            }
+                            else {
+                                console.log("User:", user);
+                                slashCommand.replyPrivateDelayed(message, "I do not have your credentials to login, Try typing `/cats login <username> <password>` to login");
+                            }
+
                         });
                     });
+                    
 
                     break;
 
@@ -426,6 +428,7 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
 
                 default:
                     console.log("HttpsStatus:", httpstatus);
+                    slashCommand.replyPrivateDelayed(message, "could not login for some reason = " + jsonData.message);
 
             }
         });
@@ -439,7 +442,7 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
 
     if (httpstatus == 200) {
         if (!defaultActivity) {
-            slashCommand.replyPrivate(message, "You do not have defaultActivity set, please contact Cats Admin.");
+            slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
             return false;;
         };
         controller.storage.users.get(message.user, function(err, user) {
