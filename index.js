@@ -136,6 +136,7 @@ controller.storage.teams.all(function(err,teams) {
     throw new Error(err);
   }
 
+  console.log("Teams:", teams);
   // connect all teams with bots up to slack!
   for (var t  in teams) {
     if (teams[t].bot) {
