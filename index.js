@@ -352,14 +352,14 @@ function performPostTime(slashCommand, incomingDate, incomingOrder, incomingSubo
         res.on('data',function(data){
             var jsonData = JSON.parse(data);
             console.log("JsonData:", jsonData);
-            httpstatus = data.httpstatus;
+            httpstatus = jsonData.httpstatus;
             switch (httpstatus) {
-                case "201":
+                case 201:
                     slashCommand.replyPrivateDelayed(message, "Cats entry was successful..");
                     break;
 
-                case "400":
-                    slashCommand.replyPrivateDelayed(message, data.details);
+                case 400:
+                    slashCommand.replyPrivateDelayed(message, jsonData.details);
                     break;
 
                 default:
@@ -411,17 +411,17 @@ function performLogin(slashCommand, incomingUserName, incomingPassword) {
         res.on('data',function(data){
             var jsonData = JSON.parse(data);
             console.log("JsonData:", jsonData);
-            httpstatus = data.httpstatus;
+            httpstatus = jsonData.httpstatus;
             switch (httpstatus) {
-                case "200" :
+                case 200 :
                     sid = jsonData.meta.sid;
                     lastName = jsonData.name;
                     firstName = jsonData.prename;
                     defaultActivity = jsonData.defaultActivity;
                     break;
 
-                case "401" :
-                    slashCommand.replyPrivateDelayed(message, data.message);
+                case 401 :
+                    slashCommand.replyPrivateDelayed(message, jsonData.message);
                     break;
 
                 default:
@@ -437,7 +437,7 @@ function performLogin(slashCommand, incomingUserName, incomingPassword) {
         return false;
     });
 
-    if (httpstatus === "200") {
+    if (httpstatus == 200) {
         if (!defaultActivity) {
             slashCommand.replyPrivate(message, "You do not have defaultActivity set, please contact Cats Admin.");
             return false;;
