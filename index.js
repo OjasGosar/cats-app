@@ -420,6 +420,32 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                     lastName = jsonData.name;
                     firstName = jsonData.prename;
                     defaultActivity = jsonData.defaultActivity;
+                    console.log("HttpsStatus was of type 200 :)");
+                    if (!defaultActivity) {
+                        slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
+                        return false;;
+                    };
+                    controller.storage.users.get(message.user, function(err, user) {
+
+                        if (!user) {
+                            user = {
+                                id: message.user
+                            }
+                        }
+
+                        user.userName = incomingUserName;
+                        user.password = incomingPassword;
+                        user.firstName = firstName;
+                        user.lastName = lastName;
+                        user.sid = sid;
+                        user.defaultActivity = defaultActivity;
+
+                        controller.storage.users.save(user);
+
+                    });
+
+                    slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
+
                     break;
 
                 case 401 :
@@ -439,36 +465,4 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
         slashCommand.replyPrivateDelayed(message, "something went wrong :(");
         return false;
     });
-
-    if (httpstatus === 200) {
-        console.log("HttpsStatus was of type 200 :)");
-        if (!defaultActivity) {
-            slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
-            return false;;
-        };
-        controller.storage.users.get(message.user, function(err, user) {
-
-            if (!user) {
-                user = {
-                    id: message.user
-                }
-            }
-
-            user.userName = incomingUserName;
-            user.password = incomingPassword;
-            user.firstName = firstName;
-            user.lastName = lastName;
-            user.sid = sid;
-            user.defaultActivity = defaultActivity;
-
-            controller.storage.users.save(user);
-
-        });
-
-        slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
-    }
-    else {
-        console.log("HttpsStatus was not 200 :O");
-        return false;
-    }
 }
