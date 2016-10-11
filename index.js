@@ -45,8 +45,8 @@ var Botkit = require('botkit');
 var Https = require('https');
 var Moment = require('moment-timezone');
 
-if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN) {
-    console.log('Error: Specified CLIENT_ID:'+ process.env.CLIENT_ID +', CLIENT_SECRET:' + process.env.CLIENT_SECRET + ', VERIFICATION_TOKEN:' + process.env.VERIFICATION_TOKEN + ', PORT:' + process.env.PORT + 'in environment');
+if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFY_TOKEN) {
+    console.log('Error: Specified CLIENT_ID:'+ process.env.CLIENT_ID +', CLIENT_SECRET:' + process.env.CLIENT_SECRET + ', VERIFY_TOKEN:' + process.env.VERIFY_TOKEN + ', PORT:' + process.env.PORT + 'in environment');
     process.exit(1);
 }
 

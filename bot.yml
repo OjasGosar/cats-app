@@ -1,2 +1,18 @@
 name: Cats App for BeepBoop
 description: A Cats App that makes catsing easy..
+config:
+- name: CLIENT_ID
+  friendly_name: Client ID
+  info: Client ID for Slack App
+  type: text
+  global: true
+- name: CLIENT_SECRET
+  friendly_name: Client Secret
+  info: Client Secret for Slack App
+  type: secret
+  global: true
+- name: VERIFY_TOKEN
+  friendly_name: Verification Token
+  info: verification token for Slack App
+  type: secret
+  global: true
