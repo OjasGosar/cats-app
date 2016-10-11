@@ -46,7 +46,7 @@ var Https = require('https');
 var Moment = require('moment-timezone');
 
 if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN) {
-    console.log('Error: Specify CLIENT_ID, CLIENT_SECRET, VERIFICATION_TOKEN, PORT, WATSON_USERNAME, WATSON_PASSWORD in environment');
+    console.log('Error: Specified CLIENT_ID:'+ process.env.CLIENT_ID +', CLIENT_SECRET:' + process.env.CLIENT_SECRET + ', VERIFICATION_TOKEN:' + process.env.VERIFICATION_TOKEN + ', PORT:' + process.env.PORT + 'in environment');
     process.exit(1);
 }
 
