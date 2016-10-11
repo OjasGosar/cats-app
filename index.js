@@ -255,9 +255,10 @@ beepboop.on('botkit.rtm.started', function (bot, resource, meta) {
   var slackUserId = resource.SlackUserID
 
   if (meta.isNew && slackUserId) {
+    console.log("inside botkit.rtm.started: meta..isNew")
     bot.api.im.open({ user: slackUserId }, function (err, response) {
       if (err) {
-        return console.log(err)
+        return console.log("im.open error:",err)
       }
       var dmChannel = response.channel.id
       bot.say({channel: dmChannel, text: 'Thanks for adding me to your team!'})
@@ -267,6 +268,7 @@ beepboop.on('botkit.rtm.started', function (bot, resource, meta) {
 });
 
 controller.on('bot_channel_join', function (bot, message) {
+    console.log("bot_channel_join")
   bot.reply(message, "I'm here!")
 });
 
