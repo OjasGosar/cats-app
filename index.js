@@ -172,7 +172,8 @@ controller.on('slash_command', function (slashCommand, message) {
                 case "help":
                     slashCommand.replyPrivate(message,
                         "I can help you forget the pain around Cats :)" +
-                        "\nTry typing `/cats add` to add cats entry for today");
+                        "\nTry typing `/cats login <username> <password>` to login" +
+                        "\nTry typing `/cats add <date in format YYYYMMDD> <order> <sub-order> <hours> <comment>` to book time");
                     break;
 
                 case "login":
@@ -180,60 +181,49 @@ controller.on('slash_command', function (slashCommand, message) {
                         slashCommand.replyPrivate(message, "I'm afraid you cant login without passing in your credentials");
                         break;
                     }
+                    var incomingUserName = text[1];
+                    var incomingPassword = text[2];
                     slashCommand.replyPrivate(message, "Attempting to login", function() {
-                        var sid = null;
-                        var firstName = null;
-                        var lastName = null;
-                        var defaultActivity = null;
-                        var options = {
-                            host: 'cats.arvato-systems.de',
-                            path: '/gui4cats-webapi/api/users',
-                            method: 'GET',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json; charset=utf-8',
-                                'User': text[1],
-                                'Password': text[2],
-                                'Timestamp': getCurrentTimestamp(),
-                                'Consumer-Id': 'CATSmobile-client',
-                                'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
-                                'Version': '1.0',
-                                'Connection': 'keep-alive',
-                                'User-Agent': 'Mozilla/5.0',
-                                'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
-                                'Cache-Control': 'no-cache',
-                                'Accept-Language': 'en'
-                            }
-                        };
-
-                        console.log("Start");
-                        var x = Https.request(options, function(res) {
-                            res.on('data',function(data){
-                                var jsonData = JSON.parse(data);
-                                console.log("JsonData:", jsonData);
-                                sid = jsonData.meta.sid;
-                                lastName = jsonData.name;
-                                firstName = jsonData.prename;
-                                defaultActivity = jsonData.defaultActivity;
-                            });
-                        });
-                        x.end();
-                        x.on('error', (e) => {
-                          console.error("Error:", e);
-                        });
-
-                        slashCommand.replyPrivateDelayed(message, "you have successfully logged-in");
+                        performLogin(slashCommand, incomingUserName, incomingPassword);
                     });
 
                     break;
 
-                    // If we made it here, just echo what the user typed back at them
-                    //TODO You do it!
-                    // slashCommand.replyPublic(message, "1", function() {
-                    //     slashCommand.replyPublicDelayed(message, "2", function() {
-                    //         slashCommand.replyPublicDelayed(message, "3")
-                    //     });
-                    // });
+                case "add":
+
+                     controller.storage.users.get(message.user, function(err, user) {
+
+                        if (!user || !user.userName || !user.password) {
+                            slashCommand.replyPrivate(message, "I do not have your credentials to login, Try typing `/cats login <username> <password>` to login");
+                            break;
+                        }
+                        performLogin(slashCommand, user.userName, user.password);
+
+                    });    
+
+                    var comment = "";
+                    for (var i = 5; i < text.length; i++) {
+                        comment += text[i] + " ";
+                    };
+                    if (!text[1] || moment(text[1], "YYYYMMDD", true).isValid() || !text[2] || !text[3] || !text[4] || !comment) {
+                        slashCommand.replyPrivate(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
+                        break;
+                    }
+
+                    var incomingDate = text[1];
+                    var incomingOrder = text[2];
+                    var incomingSuborder = text[2] + "-" + text[3];
+                    var incomingHours = text[4];
+                    var formattedComment = comment.substring(0,50);
+
+                    slashCommand.replyPrivate(message, "Attempting to add your time", function() {
+                        controller.storage.users.get(message.user, function(err, user) {
+                            performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
+                        }
+                    });
+
+                    break;
+
                 default:
                     slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " yet.");
             }   
@@ -276,14 +266,14 @@ controller.hears(['hello', 'hi'], ['direct_mention'], function (bot, message) {
   bot.reply(message, 'Hello.')
 });
 
-controller.hears(['hello', 'hi'], ['direct_message'], function (bot, message) {
-  bot.reply(message, 'Hello.')
-  bot.reply(message, 'It\'s nice to talk to you directly.')
-});
+// controller.hears(['hello', 'hi'], ['direct_message'], function (bot, message) {
+//   bot.reply(message, 'Hello.')
+//   bot.reply(message, 'It\'s nice to talk to you directly.')
+// });
 
-controller.hears('.*', ['mention'], function (bot, message) {
-  bot.reply(message, 'You really do care about me. :heart:')
-});
+// controller.hears('.*', ['mention'], function (bot, message) {
+//   bot.reply(message, 'You really do care about me. :heart:')
+// });
 
 controller.hears('help', ['direct_message', 'direct_mention'], function (bot, message) {
   var help = 'I will respond to the following messages: \n' +
@@ -323,4 +313,147 @@ function getCurrentTimestamp() {
     console.log("timezoneid:", timezoneid);
     console.log("currentDateTime:", current + " " + timezoneid);
     return current + " " + timezoneid;
+}
+
+function performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, incomingSid, incomingDefaultActivity) {
+    var options = {
+        host: 'cats.arvato-systems.de',
+        path: '/gui4cats-webapi/api/times',
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+            'Timestamp': getCurrentTimestamp(),
+            'Consumer-Id': 'CATSmobile-client',
+            'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
+            'Version': '1.0',
+            'Connection': 'keep-alive',
+            'User-Agent': 'Mozilla/5.0',
+            'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
+            'Cache-Control': 'no-cache',
+            'Accept-Language': 'en',
+            'sid': incomingSid
+            }
+    };
+
+    console.log("Start Add time POST Request");
+
+    var req = Https.request(options, function(res) {
+        res.on('data',function(data){
+            var jsonData = JSON.parse(data);
+            console.log("JsonData:", jsonData);
+            httpstatus = data.httpstatus;
+            switch (httpstatus) {
+                case 201 :
+                    slashCommand.replyPrivateDelayed(message, "Cats entry was successful..");
+                    break;
+
+                case 400 :
+                    slashCommand.replyPrivateDelayed(message, data.details);
+                    break;
+
+                default:
+                    console.log("HttpsStatus:", httpstatus);
+
+            }
+        });
+    });
+    req.on('error', (e) => {
+        console.error("Error:", e);
+        slashCommand.replyPrivateDelayed(message, "something went wrong :(");
+        break;
+    });
+
+    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'","suborderid":"'+incomingSuborder+'","activityid":"'+incomingDefaultActivity+'"}');
+    req.end();
+
+}
+
+function performLogin(slashCommand, incomingUserName, incomingPassword) {
+    var httpstatus = null;
+    var sid = null;
+    var firstName = null;
+    var lastName = null;
+    var defaultActivity = null;
+    var options = {
+        host: 'cats.arvato-systems.de',
+        path: '/gui4cats-webapi/api/users',
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+            'User': incomingUserName,
+            'Password': incomingPassword,
+            'Timestamp': getCurrentTimestamp(),
+            'Consumer-Id': 'CATSmobile-client',
+            'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
+            'Version': '1.0',
+            'Connection': 'keep-alive',
+            'User-Agent': 'Mozilla/5.0',
+            'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
+            'Cache-Control': 'no-cache',
+            'Accept-Language': 'en'
+        }
+    };
+
+    console.log("Start Login get Request");
+    var req = Https.request(options, function(res) {
+        res.on('data',function(data){
+            var jsonData = JSON.parse(data);
+            console.log("JsonData:", jsonData);
+            httpstatus = data.httpstatus;
+            switch (httpstatus) {
+                case 200 :
+                    sid = jsonData.meta.sid;
+                    lastName = jsonData.name;
+                    firstName = jsonData.prename;
+                    defaultActivity = jsonData.defaultActivity;
+                    break;
+
+                case 401 :
+                    slashCommand.replyPrivateDelayed(message, data.message);
+                    break;
+
+                default:
+                    console.log("HttpsStatus:", httpstatus);
+
+            }
+        });
+    });
+    req.end();
+    req.on('error', (e) => {
+        console.error("Error:", e);
+        slashCommand.replyPrivateDelayed(message, "something went wrong :(");
+        break;
+    });
+
+    if (httpstatus === 200) {
+        if (!defaultActivity) {
+            slashCommand.replyPrivate(message, "You do not have defaultActivity set, please contact Cats Admin.");
+            break;
+        };
+        controller.storage.users.get(message.user, function(err, user) {
+
+            if (!user) {
+                user = {
+                    id: message.user
+                }
+            }
+
+            user.userName = incomingUserName;
+            user.password = incomingPassword;
+            user.firstName = firstName;
+            user.lastName = lastName;
+            user.sid = sid;
+            user.defaultActivity = defaultActivity;
+
+            controller.storage.users.save(user);
+
+        });
+
+        slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
+    }
+    else {
+        break;
+    }
 }
