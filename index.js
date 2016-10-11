@@ -185,7 +185,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     var incomingPassword = text[2];
                     var loginSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to login", function() {
-                        loginSuccess = performLogin(slashCommand, incomingUserName, incomingPassword);
+                        loginSuccess = performLogin(slashCommand, message, incomingUserName, incomingPassword);
                     });
 
                     break;
@@ -204,7 +204,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     });
 
                     if (!incomingUser) {
-                        performLogin(slashCommand, incomingUser.userName, incomingUser.password);
+                        performLogin(slashCommand, message, incomingUser.userName, incomingUser.password);
                     }
                     else
                     {
@@ -228,7 +228,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     var postTimeSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to add your time", function() {
                         controller.storage.users.get(message.user, function(err, user) {
-                            postTimeSuccess = performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
+                            postTimeSuccess = performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
                         });
                     });
 
@@ -325,7 +325,7 @@ function getCurrentTimestamp() {
     return current + " " + timezoneid;
 }
 
-function performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, incomingSid, incomingDefaultActivity) {
+function performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, incomingSid, incomingDefaultActivity) {
     var options = {
         host: 'cats.arvato-systems.de',
         path: '/gui4cats-webapi/api/times',
@@ -379,7 +379,7 @@ function performPostTime(slashCommand, incomingDate, incomingOrder, incomingSubo
 
 }
 
-function performLogin(slashCommand, incomingUserName, incomingPassword) {
+function performLogin(slashCommand, message, incomingUserName, incomingPassword) {
     var httpstatus = null;
     var sid = null;
     var firstName = null;
