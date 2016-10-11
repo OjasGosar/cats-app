@@ -190,16 +190,25 @@ controller.on('slash_command', function (slashCommand, message) {
                     break;
 
                 case "add":
-
-                     controller.storage.users.get(message.user, function(err, user) {
+                    var incomingUser = null;
+                    controller.storage.users.get(message.user, function(err, user) {
 
                         if (!user || !user.userName || !user.password) {
                             slashCommand.replyPrivate(message, "I do not have your credentials to login, Try typing `/cats login <username> <password>` to login");
-                            break;
                         }
-                        performLogin(slashCommand, user.userName, user.password);
+                        else {
+                            incomingUser = user;
+                        }
 
-                    });    
+                    });
+
+                    if (!incomingUser) {
+                        performLogin(slashCommand, incomingUser.userName, incomingUser.password);
+                    }
+                    else
+                    {
+                        break;
+                    }
 
                     var comment = "";
                     for (var i = 5; i < text.length; i++) {
