@@ -130,6 +130,27 @@ controller.on('rtm_close',function(bot) {
   // you may want to attempt to re-open
 });
 
+controller.storage.teams.all(function(err,teams) {
+
+  if (err) {
+    throw new Error(err);
+  }
+
+  // connect all teams with bots up to slack!
+  for (var t  in teams) {
+    if (teams[t].bot) {
+      controller.spawn(teams[t]).startRTM(function(err, bot) {
+        if (err) {
+          console.log('Error connecting bot to Slack:',err);
+        } else {
+          trackBot(bot);
+        }
+      });
+    }
+  }
+
+});
+
 controller.on('slash_command', function (slashCommand, message) {
 
     switch (message.command) {
