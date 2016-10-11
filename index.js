@@ -440,7 +440,8 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
         return false;
     });
 
-    if (httpstatus == 200) {
+    if (httpstatus === 200) {
+        console.log("HttpsStatus was of type 200 :)");
         if (!defaultActivity) {
             slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
             return false;;
@@ -467,6 +468,7 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
         slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
     }
     else {
-        return false;;
+        console.log("HttpsStatus was not 200 :O");
+        return false;
     }
 }
