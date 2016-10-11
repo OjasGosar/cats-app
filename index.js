@@ -183,8 +183,9 @@ controller.on('slash_command', function (slashCommand, message) {
                     }
                     var incomingUserName = text[1];
                     var incomingPassword = text[2];
+                    var loginSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to login", function() {
-                        performLogin(slashCommand, incomingUserName, incomingPassword);
+                        loginSuccess = performLogin(slashCommand, incomingUserName, incomingPassword);
                     });
 
                     break;
@@ -224,10 +225,10 @@ controller.on('slash_command', function (slashCommand, message) {
                     var incomingSuborder = text[2] + "-" + text[3];
                     var incomingHours = text[4];
                     var formattedComment = comment.substring(0,50);
-
+                    var postTimeSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to add your time", function() {
                         controller.storage.users.get(message.user, function(err, user) {
-                            performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
+                            postTimeSuccess = performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
                         });
                     });
 
@@ -370,7 +371,7 @@ function performPostTime(slashCommand, incomingDate, incomingOrder, incomingSubo
     req.on('error', (e) => {
         console.error("Error:", e);
         slashCommand.replyPrivateDelayed(message, "something went wrong :(");
-        break;
+        return false;;
     });
 
     req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'","suborderid":"'+incomingSuborder+'","activityid":"'+incomingDefaultActivity+'"}');
@@ -433,13 +434,13 @@ function performLogin(slashCommand, incomingUserName, incomingPassword) {
     req.on('error', (e) => {
         console.error("Error:", e);
         slashCommand.replyPrivateDelayed(message, "something went wrong :(");
-        break;
+        return false;
     });
 
     if (httpstatus === 200) {
         if (!defaultActivity) {
             slashCommand.replyPrivate(message, "You do not have defaultActivity set, please contact Cats Admin.");
-            break;
+            return false;;
         };
         controller.storage.users.get(message.user, function(err, user) {
 
@@ -463,6 +464,6 @@ function performLogin(slashCommand, incomingUserName, incomingPassword) {
         slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
     }
     else {
-        break;
+        return false;;
     }
 }
