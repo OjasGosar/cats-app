@@ -42,11 +42,10 @@
 
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 var Botkit = require('botkit');
-var Http = require('http');
 var Https = require('https');
 var Moment = require('moment-timezone');
 
-if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN || !process.env.WATSON_USERNAME || !process.env.WATSON_PASSWORD) {
+if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN) {
     console.log('Error: Specify CLIENT_ID, CLIENT_SECRET, VERIFICATION_TOKEN, PORT, WATSON_USERNAME, WATSON_PASSWORD in environment');
     process.exit(1);
 }
@@ -73,15 +72,6 @@ var controller = Botkit.slackbot(config).configureSlackApp(
         scopes: ['commands','bot'],
     }
 );
-
-var watson = require('watson-developer-cloud');
-
-var personality_insights = watson.personality_insights({
-    url: "https://gateway.watsonplatform.net/personality-insights/api",
-    username: process.env.WATSON_USERNAME,
-    password: process.env.WATSON_PASSWORD,    
-    version: 'v2'
-});
 
 controller.setupWebserver(process.env.PORT, function (err, webserver) {
     controller.createWebhookEndpoints(controller.webserver);
