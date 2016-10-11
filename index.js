@@ -42,9 +42,12 @@
 
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 var Botkit = require('botkit');
+var Http = require('http');
+var Https = require('https');
+var Moment = require('moment-timezone');
 
-if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN) {
-    console.log('Error: Specify CLIENT_ID, CLIENT_SECRET, VERIFICATION_TOKEN and PORT in environment');
+if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFICATION_TOKEN || !process.env.WATSON_USERNAME || !process.env.WATSON_PASSWORD) {
+    console.log('Error: Specify CLIENT_ID, CLIENT_SECRET, VERIFICATION_TOKEN, PORT, WATSON_USERNAME, WATSON_PASSWORD in environment');
     process.exit(1);
 }
 
@@ -60,13 +63,25 @@ if (process.env.MONGOLAB_URI) {
     };
 }
 
+config.debug = true;
+config.logLevel = 7;
+
 var controller = Botkit.slackbot(config).configureSlackApp(
     {
         clientId: process.env.CLIENT_ID,
         clientSecret: process.env.CLIENT_SECRET,
-        scopes: ['commands'],
+        scopes: ['commands','bot'],
     }
 );
+
+var watson = require('watson-developer-cloud');
+
+var personality_insights = watson.personality_insights({
+    url: "https://gateway.watsonplatform.net/personality-insights/api",
+    username: process.env.WATSON_USERNAME,
+    password: process.env.WATSON_PASSWORD,    
+    version: 'v2'
+});
 
 controller.setupWebserver(process.env.PORT, function (err, webserver) {
     controller.createWebhookEndpoints(controller.webserver);
@@ -85,29 +100,124 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 // BEGIN EDITING HERE!
 //
 
+var _bots = {};
+function trackBot(bot) {
+  _bots[bot.config.token] = bot;
+}
+
+controller.on('create_bot',function(bot,config) {
+
+  if (_bots[bot.config.token]) {
+    // already online! do nothing.
+  } else {
+    bot.startRTM(function(err) {
+
+      if (!err) {
+        trackBot(bot);
+      }
+
+      bot.startPrivateConversation({user: config.createdBy},function(err,convo) {
+        if (err) {
+          console.log(err);
+        } else {
+          convo.say('I am a bot that has just joined your team');
+          convo.say('You must now /invite me to a channel so that I can be of use!');
+        }
+      });
+
+    });
+  }
+
+});
+
+// Handle events related to the websocket connection to Slack
+controller.on('rtm_open',function(bot) {
+  console.log('** The RTM api just connected!');
+});
+
+controller.on('rtm_close',function(bot) {
+  console.log('** The RTM api just closed');
+  // you may want to attempt to re-open
+});
+
 controller.on('slash_command', function (slashCommand, message) {
 
     switch (message.command) {
-        case "/echo": //handle the `/echo` slash command. We might have others assigned to this app too!
-            // The rules are simple: If there is no text following the command, treat it as though they had requested "help"
-            // Otherwise just echo back to them what they sent us.
-
+        case "/cats": 
+            
             // but first, let's make sure the token matches!
             if (message.token !== process.env.VERIFICATION_TOKEN) return; //just ignore it.
 
-            // if no text was supplied, treat it as a help command
-            if (message.text === "" || message.text === "help") {
-                slashCommand.replyPrivate(message,
-                    "I echo back what you tell me. " +
-                    "Try typing `/echo hello` to see.");
-                return;
-            }
+            var text = message.text.trim().split(" ");
+            switch (text[0]) {
+                case "help":
+                    slashCommand.replyPrivate(message,
+                        "I can help you forget the pain around Cats :)" +
+                        "\nTry typing `/cats add` to add cats entry for today");
+                    break;
 
-            // If we made it here, just echo what the user typed back at them
-            //TODO You do it!
-            slashCommand.replyPublic(message, "1", function() {
-                slashCommand.replyPublicDelayed(message, "2").then(slashCommand.replyPublicDelayed(message, "3"));
-            });
+                case "login":
+                    if (!text[1] || !text[2]) {
+                        slashCommand.replyPrivate(message, "I'm afraid you cant login without passing in your credentials");
+                        break;
+                    }
+                    slashCommand.replyPrivate(message, "Attempting to login", function() {
+                        var sid = null;
+                        var firstName = null;
+                        var lastName = null;
+                        var defaultActivity = null;
+                        var options = {
+                            host: 'cats.arvato-systems.de',
+                            path: '/gui4cats-webapi/api/users',
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json; charset=utf-8',
+                                'User': text[1],
+                                'Password': text[2],
+                                'Timestamp': getCurrentTimestamp(),
+                                'Consumer-Id': 'CATSmobile-client',
+                                'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
+                                'Version': '1.0',
+                                'Connection': 'keep-alive',
+                                'User-Agent': 'Mozilla/5.0',
+                                'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
+                                'Cache-Control': 'no-cache',
+                                'Accept-Language': 'en'
+                            }
+                        };
+
+                        console.log("Start");
+                        var x = Https.request(options, function(res) {
+                            res.on('data',function(data){
+                                var jsonData = JSON.parse(data);
+                                console.log("JsonData:", jsonData);
+                                sid = jsonData.meta.sid;
+                                lastName = jsonData.name;
+                                firstName = jsonData.prename;
+                                defaultActivity = jsonData.defaultActivity;
+                            });
+                        });
+                        x.end();
+                        x.on('error', (e) => {
+                          console.error("Error:", e);
+                        });
+
+                        slashCommand.replyPrivateDelayed(message, "you have successfully logged-in");
+                    });
+
+                    break;
+
+                    // If we made it here, just echo what the user typed back at them
+                    //TODO You do it!
+                    // slashCommand.replyPublic(message, "1", function() {
+                    //     slashCommand.replyPublicDelayed(message, "2", function() {
+                    //         slashCommand.replyPublicDelayed(message, "3")
+                    //     });
+                    // });
+                default:
+                    slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " yet.");
+            }   
 
             break;
         default:
@@ -115,6 +225,13 @@ controller.on('slash_command', function (slashCommand, message) {
 
     }
 
-})
-;
+});
 
+function getCurrentTimestamp() {
+    var current = Moment().format("YYYYMMDD HH:mm:ss");
+    console.log("Current:", current);
+    var timezoneid = Moment.tz.guess();
+    console.log("timezoneid:", timezoneid);
+    console.log("currentDateTime:", current + " " + timezoneid);
+    return current + " " + timezoneid;
+}
