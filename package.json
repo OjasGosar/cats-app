@@ -12,8 +12,10 @@
     "url": "git+https://github.com/OjasGosar/cats-app.git"
   },
   "keywords": [
+    "slackbot",
     "slack",
-    "slash command"
+    "slash command",
+    "bot"
   ],
   "engines": {
     "node": "5.1.1"
@@ -21,6 +23,7 @@
   "dependencies": {
     "botkit": "^0.4.0",
     "botkit-storage-mongo": "^1.0.2",
+    "beepboop-botkit": "^1.4.1",
     "mongodb": "^1.4.39",
     "moment-timezone": "^0.5.6"
   }
