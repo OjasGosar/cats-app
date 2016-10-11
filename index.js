@@ -228,7 +228,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     slashCommand.replyPrivate(message, "Attempting to add your time", function() {
                         controller.storage.users.get(message.user, function(err, user) {
                             performPostTime(slashCommand, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, user.sid, user.defaultActivity);
-                        }
+                        });
                     });
 
                     break;
