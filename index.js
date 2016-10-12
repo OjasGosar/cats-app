@@ -80,9 +80,10 @@ controller.on('slash_command', function (slashCommand, message) {
                                         comment += text[i] + " ";
                                     }
                                     console.log("Comment:", comment);
-                                    var year = moment().year;
-                                    var month = moment().month() + 1;
-                                    var date = ((text[1] === 'today') ? moment().format("YYYYMMDD") : year+month+ text[1]);
+                                    var year = moment().year().toString();
+                                    var month = (moment().month() + 1).toString();
+
+                                    var date = ((text[1] === 'today') ? moment().format("YYYYMMDD") : year + month + text[1]);
                                     console.log("Date:", date);
                                     if (!date || !(moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format DD> <order> <sub-order> <hours> <comment> ");
