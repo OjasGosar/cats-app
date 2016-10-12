@@ -45,11 +45,8 @@ var Botkit = require('botkit');
 var Https = require('https');
 var Moment = require('moment-timezone');
 var BeepBoop = require('beepboop-botkit');
+var os = require('os');
 
-// if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT || !process.env.VERIFY_TOKEN) {
-//     console.log('Error: Specified CLIENT_ID:'+ process.env.CLIENT_ID +', CLIENT_SECRET:' + process.env.CLIENT_SECRET + ', VERIFY_TOKEN:' + process.env.VERIFY_TOKEN + ', PORT:' + process.env.PORT + 'in environment');
-//     process.exit(1);
-// }
 
 var config = {}
 if (process.env.MONGOLAB_URI) {
@@ -76,7 +73,7 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 });
 
 
-var help = "I can help you forget the pain around Cats :)" +
+var help = "I can help you forget the pain around Cats :slightly_smiling_face:" +
                 "\nTry typing `/cats saveCredentials <username> <password>` to save credentials & test login" +
                 "\nTry typing `/cats addTime <date in format YYYYMMDD> <order> <sub-order> <hours> <comment>` to book time" + 
                 "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time";
@@ -141,12 +138,10 @@ controller.on('slash_command', function (slashCommand, message) {
                                     }
                                 }
                                 else {
-                                    console.log("User:", user);
                                     slashCommand.replyPrivateDelayed(message, "I do not have your right credentials to login, Try typing `/cats login <username> <password>` to login");
                                 }
                             }
                             else {
-                                console.log("User:", user);
                                 slashCommand.replyPrivateDelayed(message, "I do not have your credentials to login, Try typing `/cats login <username> <password>` to login");
                             }
 
@@ -177,7 +172,6 @@ beepboop.on('botkit.rtm.started', function (bot, resource, meta) {
   var slackUserId = resource.SlackUserID
 
   if (meta.isNew && slackUserId) {
-    console.log("inside botkit.rtm.started: meta..isNew")
     bot.api.im.open({ user: slackUserId }, function (err, response) {
       if (err) {
         return console.log("im.open error:",err)
@@ -198,14 +192,14 @@ controller.hears(['hello', 'hi'], 'direct_mention', function (bot, message) {
   bot.reply(message, 'Hello.');
 });
 
-// controller.hears(['hello', 'hi'], ['direct_message'], function (bot, message) {
-//   bot.reply(message, 'Hello.')
-//   bot.reply(message, 'It\'s nice to talk to you directly.')
-// });
+controller.hears(['hello', 'hi'], 'direct_message', function (bot, message) {
+  bot.reply(message, 'Hello.')
+  bot.reply(message, 'It\'s nice to talk to you directly.')
+});
 
-// controller.hears('.*', ['mention'], function (bot, message) {
-//   bot.reply(message, 'You really do care about me. :heart:')
-// });
+controller.hears('.*', 'mention', function (bot, message) {
+  bot.reply(message, 'You really do care about me. :heart:')
+});
 
 controller.hears(['help'], 'direct_message,direct_mention', function (bot, message) {
   bot.reply(message, help)
@@ -219,8 +213,6 @@ controller.hears(['reminder'], 'direct_message, direct_mention', function (bot, 
             if (err) {
                 bot.botkit.log('Failed to get users list :(', err);
             }
-            //console.log(list);
-            //bot.reply(message,"Starting Scrum now");
             for (var i = 0; i < list.members.length; i++) {
 
                 if(list.members[i].is_bot == false) {
@@ -244,12 +236,39 @@ controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message
   bot.reply(message, 'Sorry <@' + message.user + '>, I don\'t understand. \n')
 });
 
+controller.hears(['identify yourself', 'who are you', 'what is your name'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+    var hostname = os.hostname();
+    var uptime = formatUptime(process.uptime());
+
+    bot.reply(message,
+        ':robot_face: I am a bot named <@' + bot.identity.name +
+         '>. I have been running for ' + uptime + ' on ' + hostname + '.' +
+         '\n I have been created by Mr. Ojas Gosar');
+
+});
+
+function formatUptime(uptime) {
+    var unit = 'second';
+    if (uptime > 60) {
+        uptime = uptime / 60;
+        unit = 'minute';
+    }
+    if (uptime > 60) {
+        uptime = uptime / 60;
+        unit = 'hour';
+    }
+    if (uptime != 1) {
+        unit = unit + 's';
+    }
+
+    uptime = uptime + ' ' + unit;
+    return uptime;
+}
+
 function getCurrentTimestamp() {
     var current = Moment().format("YYYYMMDD HH:mm:ss");
-    console.log("Current:", current);
     var timezoneid = Moment.tz.guess();
-    console.log("timezoneid:", timezoneid);
-    console.log("currentDateTime:", current + " " + timezoneid);
     return current + " " + timezoneid;
 }
 
@@ -346,7 +365,6 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                     lastName = jsonData.name;
                     firstName = jsonData.prename;
                     defaultActivity = jsonData.defaultActivity;
-                    console.log("HttpsStatus was of type 200 :)");
                     if (!defaultActivity) {
                         slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
                     };
