@@ -63,7 +63,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     var incomingPassword = text[2];
                     var loginSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to login " + "\nCommand: " + message.command + " "+ message.text, function() {
-                        loginSuccess = performLogin(slashCommand, message, incomingUserName, incomingPassword);
+                        loginSuccess = performLogin(slashCommand, message, incomingUserName, incomingPassword, false);
                     });
 
                     break;
@@ -73,7 +73,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     slashCommand.replyPrivate(message, "Attempting to add your hours to cats.." + "\nCommand: " + message.command + " "+ message.text, function() {
                         controller.storage.users.get(message.user, function(err, user) {
                             if (user && user.userName && user.password) {
-                                var returnStatusCode = performLogin(slashCommand, message, user.userName, user.password);
+                                var returnStatusCode = performLogin(slashCommand, message, user.userName, user.password, true);
                                 if (true) {
                                     var comment = "";
                                     for (var i = 5; i < text.length; i++) {
@@ -82,7 +82,7 @@ controller.on('slash_command', function (slashCommand, message) {
                                     console.log("Comment:", comment);
                                     var year = moment().year;
                                     var month = moment().month() + 1;
-                                    var date = ((text[1] === 'today') ? moment().format("YYYYMM") : year+month+ text[1]);
+                                    var date = ((text[1] === 'today') ? moment().format("YYYYMMDD") : year+month+ text[1]);
                                     console.log("Date:", date);
                                     if (!date || !(moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format DD> <order> <sub-order> <hours> <comment> ");
@@ -296,7 +296,7 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
 
 }
 
-function performLogin(slashCommand, message, incomingUserName, incomingPassword) {
+function performLogin(slashCommand, message, incomingUserName, incomingPassword, silent) {
     var httpstatus = null;
     var sid = null;
     var firstName = null;
@@ -356,8 +356,9 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                         controller.storage.users.save(user);
 
                     });
-
-                    slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in");
+                    if (!silent) {
+                        slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in");
+                    }
                     break;
 
                 case 401 :
