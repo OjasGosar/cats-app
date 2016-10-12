@@ -119,7 +119,6 @@ controller.on('slash_command', function (slashCommand, message) {
                                     }
                                     console.log("Comment:", comment);
                                     var date = ((text[1] === 'today') ? Moment().format("YYYYMMDD") : text[1]);
-                                    slashCommand.replyPrivateDelayed(message, date);
                                     if (!date || !(Moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
                                         addTimeSuccess = false;
