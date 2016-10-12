@@ -1,45 +1,3 @@
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- ______    ______    ______   __  __    __    ______
- /\  == \  /\  __ \  /\__  _\ /\ \/ /   /\ \  /\__  _\
- \ \  __<  \ \ \/\ \ \/_/\ \/ \ \  _"-. \ \ \ \/_/\ \/
- \ \_____\ \ \_____\   \ \_\  \ \_\ \_\ \ \_\   \ \_\
- \/_____/  \/_____/    \/_/   \/_/\/_/  \/_/    \/_/
-
-
- This is a sample Slack Button application that provides a custom
- Slash command.
-
- This bot demonstrates many of the core features of Botkit:
-
- *
- * Authenticate users with Slack using OAuth
- * Receive messages using the slash_command event
- * Reply to Slash command both publicly and privately
-
- # RUN THE BOT:
-
- Create a Slack app. Make sure to configure at least one Slash command!
-
- -> https://api.slack.com/applications/new
-
- Run your bot from the command line:
-
- clientId=<my client id> clientSecret=<my client secret> PORT=3000 node bot.js
-
- Note: you can test your oauth authentication locally, but to use Slash commands
- in Slack, the app must be hosted at a publicly reachable IP or host.
-
-
- # EXTEND THE BOT:
-
- Botkit is has many features for building cool and useful bots!
-
- Read all about it here:
-
- -> http://howdy.ai/botkit
-
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 var Botkit = require('botkit');
 var Https = require('https');
@@ -75,8 +33,12 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 
 var help = "I can help you forget the pain around Cats :slightly_smiling_face:" +
                 "\nTry typing `/cats saveCredentials <username> <password>` to save credentials & test login" +
-                "\nTry typing `/cats addTime <date in format YYYYMMDD> <order> <sub-order> <hours> <comment>` to book time" + 
-                "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time";
+                "\nTry typing `/cats addTime <date in format DD> <order> <sub-order> <hours> <comment>` to book time" + 
+                "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time" + 
+                "\nExample: `/cats saveCredentials bond007 james` - saving credentials " +
+                "\nExample: `/cats addTime 27 US00000 100 8 created bots` - adding hours"
+                "\nExample: `/cats addTime 22 US00000 na 8 created bots` - with no sub-order" +
+                "\nExample: `/cats addTime today US00000 na 8 created bots` - with today as a date";
 
 controller.on('slash_command', function (slashCommand, message) {
 
@@ -100,7 +62,7 @@ controller.on('slash_command', function (slashCommand, message) {
                     var incomingUserName = text[1];
                     var incomingPassword = text[2];
                     var loginSuccess = true;
-                    slashCommand.replyPrivate(message, "Attempting to login", function() {
+                    slashCommand.replyPrivate(message, "Attempting to login " + "\nCommand: " + message.command + " "+ message.text, function() {
                         loginSuccess = performLogin(slashCommand, message, incomingUserName, incomingPassword);
                     });
 
@@ -108,7 +70,7 @@ controller.on('slash_command', function (slashCommand, message) {
 
                 case "addTime":
                     var addTimeSuccess = true;
-                    slashCommand.replyPrivate(message, "Attempting to add your hours to cats..", function() {
+                    slashCommand.replyPrivate(message, "Attempting to add your hours to cats.." + "\nCommand: " + message.command + " "+ message.text, function() {
                         controller.storage.users.get(message.user, function(err, user) {
                             if (user && user.userName && user.password) {
                                 var returnStatusCode = performLogin(slashCommand, message, user.userName, user.password);
@@ -118,7 +80,9 @@ controller.on('slash_command', function (slashCommand, message) {
                                         comment += text[i] + " ";
                                     }
                                     console.log("Comment:", comment);
-                                    var date = ((text[1] === 'today') ? Moment().format("YYYYMMDD") : text[1]);
+                                    var year = moment().year;
+                                    var month = moment().month() + 1;
+                                    var date = ((text[1] === 'today') ? Moment().format("YYYYMM") : year+month+ text[1]);
                                     if (!date || !(Moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
                                         addTimeSuccess = false;
@@ -244,8 +208,8 @@ controller.hears(['identify yourself', 'who are you', 'what is your name'], 'dir
 
     bot.reply(message,
         ':robot_face: I am a bot named <@' + bot.identity.name +
-         '>. I have been running for ' + uptime + ' on ' + hostname + '.' +
-         '\n I have been created by Mr. Ojas Gosar');
+        '>. I have been running for ' + uptime + ' on ' + hostname + '.' +
+        '\n I have been created by Mr. Ojas Gosar');
 
 });
 
@@ -310,6 +274,10 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
                     slashCommand.replyPrivateDelayed(message, jsonData.details);
                     break;
 
+                case 500:
+                    slashCommand.replyPrivateDelayed(message, jsonData.message);
+                    break;
+
                 default:
                     console.log("HttpsStatus:", httpstatus);
 
@@ -322,7 +290,8 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
         return false;;
     });
 
-    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'","suborderid":"'+incomingSuborder+'","activityid":"'+incomingDefaultActivity+'"}');
+    var subOrder = (!(incomingSuborder == 'na') ? '' : '"suborderid":"'+incomingSuborder+'"');
+    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'",'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}');
     req.end();
 
 }
