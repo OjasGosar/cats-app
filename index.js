@@ -423,7 +423,6 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                     console.log("HttpsStatus was of type 200 :)");
                     if (!defaultActivity) {
                         slashCommand.replyPrivateDelayed(message, "You do not have defaultActivity set, please contact Cats Admin.");
-                        return false;;
                     };
                     controller.storage.users.get(message.user, function(err, user) {
 
@@ -445,7 +444,6 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                     });
 
                     slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
-
                     break;
 
                 case 401 :
@@ -458,11 +456,13 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
 
             }
         });
+        res.on('end', function () {
+            console.log("Response.Data:",res.data);
+        });
     });
-    req.end();
     req.on('error', (e) => {
         console.error("Error:", e);
         slashCommand.replyPrivateDelayed(message, "something went wrong :(");
-        return false;
     });
+    req.end();
 }
