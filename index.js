@@ -231,7 +231,7 @@ controller.hears(['reminder'], 'direct_message,direct_mention', function (bot, m
         });
     }
     else {
-        bot.reply(message, "You are not authorized to spam ;)");
+        bot.reply(message, 'Sorry <@' + message.user + '>, you are not authorized to spam :wink:');
     }
 
 });
