@@ -126,7 +126,7 @@ controller.on('slash_command', function (slashCommand, message) {
                                         return;
                                     }
                                     else {
-                                        var incomingDate = text[1];
+                                        var incomingDate = date;
                                         var incomingOrder = text[2];
                                         var incomingSuborder = text[2] + "-" + text[3];
                                         var incomingHours = text[4];
