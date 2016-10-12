@@ -232,10 +232,6 @@ controller.hears(['reminder'], 'direct_message, direct_mention', function (bot, 
 
 });
 
-controller.hears(['.*'], 'direct_message,direct_mention', function (bot, message) {
-  bot.reply(message, 'Sorry <@' + message.user + '>, I don\'t understand. \n')
-});
-
 controller.hears(['identify yourself', 'who are you', 'what is your name'], 'direct_message,direct_mention,mention', function(bot, message) {
 
     var hostname = os.hostname();
