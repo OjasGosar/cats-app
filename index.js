@@ -196,7 +196,7 @@ controller.on('slash_command', function (slashCommand, message) {
                         controller.storage.users.get(message.user, function(err, user) {
                             if (user && user.userName && user.password) {
                                 var returnStatusCode = performLogin(slashCommand, message, user.userName, user.password);
-                                if (returnStatusCode === 200) {
+                                if (true) {
                                     var comment = "";
                                     for (var i = 5; i < text.length; i++) {
                                         comment += text[i] + " ";
