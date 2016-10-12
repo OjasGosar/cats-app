@@ -36,7 +36,7 @@ var help = "I can help you forget the pain around Cats :slightly_smiling_face:" 
                 "\nTry typing `/cats addTime <date in format DD> <order> <sub-order> <hours> <comment>` to book time" + 
                 "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time" + 
                 "\nExample: `/cats saveCredentials bond007 james` - saving credentials " +
-                "\nExample: `/cats addTime 27 US00000 100 8 created bots` - adding hours"
+                "\nExample: `/cats addTime 27 US00000 100 8 created bots` - adding hours" +
                 "\nExample: `/cats addTime 22 US00000 na 8 created bots` - with no sub-order" +
                 "\nExample: `/cats addTime today US00000 na 8 created bots` - with today as a date";
 
