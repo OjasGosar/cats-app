@@ -290,8 +290,8 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
         return false;;
     });
 
-    var subOrder = (!(incomingSuborder == 'na') ? '' : '"suborderid":"'+incomingSuborder+'"');
-    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'",'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}');
+    var subOrder = (!(incomingSuborder == 'na') ? '' : ',"suborderid":"'+incomingSuborder+'"');
+    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'"'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}');
     req.end();
 
 }
