@@ -118,7 +118,8 @@ controller.on('slash_command', function (slashCommand, message) {
                                         comment += text[i] + " ";
                                     }
                                     console.log("Comment:", comment);
-                                    var date = ((text[1] == 'today') ? Moment().format("YYYYMMDD") : text[1]);
+                                    var date = ((text[1] === 'today') ? Moment().format("YYYYMMDD") : text[1]);
+                                    slashCommand.replyPrivateDelayed(message, date);
                                     if (!date || !(Moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
                                         addTimeSuccess = false;
@@ -153,12 +154,12 @@ controller.on('slash_command', function (slashCommand, message) {
                     break;
 
                 default:
-                    slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " yet.");
+                    slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " " + message.text + " yet.");
             }   
 
             break;
         default:
-            slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " yet.");
+            slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " " + message.text + " yet.");
 
     }
 
