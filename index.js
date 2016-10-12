@@ -200,10 +200,12 @@ controller.on('slash_command', function (slashCommand, message) {
                                     var comment = "";
                                     for (var i = 5; i < text.length; i++) {
                                         comment += text[i] + " ";
-                                    };
-                                    if (!text[1] || Moment(text[1], "YYYYMMDD", true).isValid() || !text[2] || !text[3] || !text[4] || !comment) {
+                                    }
+                                    console.log("Comment:", comment);
+                                    if (!text[1] || !(Moment(text[1], "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
                                         addTimeSuccess = false;
+                                        return;
                                     }
                                     else {
                                         var incomingDate = text[1];
