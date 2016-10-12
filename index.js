@@ -1,7 +1,7 @@
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 var Botkit = require('botkit');
 var Https = require('https');
-var Moment = require('moment-timezone');
+var moment = require('moment-timezone');
 var BeepBoop = require('beepboop-botkit');
 var os = require('os');
 
@@ -82,8 +82,8 @@ controller.on('slash_command', function (slashCommand, message) {
                                     console.log("Comment:", comment);
                                     var year = moment().year;
                                     var month = moment().month() + 1;
-                                    var date = ((text[1] === 'today') ? Moment().format("YYYYMM") : year+month+ text[1]);
-                                    if (!date || !(Moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
+                                    var date = ((text[1] === 'today') ? moment().format("YYYYMM") : year+month+ text[1]);
+                                    if (!date || !(moment(date, "YYYYMMDD", true).isValid()) || !text[2] || !text[3] || !text[4] || !comment) {
                                         slashCommand.replyPrivateDelayed(message, "Please pass data in the form of <date in format YYYYMMDD> <order> <sub-order> <hours> <comment> ");
                                         addTimeSuccess = false;
                                         return;
@@ -232,8 +232,8 @@ function formatUptime(uptime) {
 }
 
 function getCurrentTimestamp() {
-    var current = Moment().format("YYYYMMDD HH:mm:ss");
-    var timezoneid = Moment.tz.guess();
+    var current = moment().format("YYYYMMDD HH:mm:ss");
+    var timezoneid = moment.tz.guess();
     return current + " " + timezoneid;
 }
 
