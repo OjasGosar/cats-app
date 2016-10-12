@@ -159,6 +159,11 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 
 // });
 
+var help = "I can help you forget the pain around Cats :)" +
+                "\nTry typing `/cats saveCredentials <username> <password>` to save credentials & test login" +
+                "\nTry typing `/cats addTime <date in format YYYYMMDD> <order> <sub-order> <hours> <comment>` to book time" + 
+                "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time");
+
 controller.on('slash_command', function (slashCommand, message) {
 
     switch (message.command) {
@@ -170,15 +175,12 @@ controller.on('slash_command', function (slashCommand, message) {
             var text = message.text.trim().split(" ");
             switch (text[0]) {
                 case "help":
-                    slashCommand.replyPrivate(message,
-                        "I can help you forget the pain around Cats :)" +
-                        "\nTry typing `/cats login <username> <password>` to login" +
-                        "\nTry typing `/cats add <date in format YYYYMMDD> <order> <sub-order> <hours> <comment>` to book time");
+                    slashCommand.replyPrivate(message, help);
                     break;
 
-                case "login":
+                case "saveCredentials":
                     if (!text[1] || !text[2]) {
-                        slashCommand.replyPrivate(message, "I'm afraid you cant login without passing in your credentials");
+                        slashCommand.replyPrivate(message, "I'm afraid you cant save credentials without passing 'em");
                         break;
                     }
                     var incomingUserName = text[1];
@@ -190,7 +192,7 @@ controller.on('slash_command', function (slashCommand, message) {
 
                     break;
 
-                case "add":
+                case "addTime":
                     var addTimeSuccess = true;
                     slashCommand.replyPrivate(message, "Attempting to add your hours to cats..", function() {
                         controller.storage.users.get(message.user, function(err, user) {
@@ -289,11 +291,36 @@ controller.hears(['hello', 'hi'], ['direct_mention'], function (bot, message) {
 // });
 
 controller.hears('help', ['direct_message', 'direct_mention'], function (bot, message) {
-  var help = 'I will respond to the following messages: \n' +
-      '`bot hi` for a simple message.\n' +
-      '`@<your bot\'s name>` to demonstrate detecting a mention.\n' +
-      '`bot help` to see this again.'
   bot.reply(message, help)
+});
+
+controller.hears('reminder', ['direct_message', 'direct_mention'], function (bot, message) {
+    if (message.user == 'U2K8XK03Z' || message.user == 'U23RT8WQ4') {
+        bot.api.users.list({
+
+        }, function(err, list) {
+            if (err) {
+                bot.botkit.log('Failed to get users list :(', err);
+            }
+            //console.log(list);
+            //bot.reply(message,"Starting Scrum now");
+            for (var i = 0; i < list.members.length; i++) {
+
+                if(list.members[i].is_bot == false) {
+                    bot.startPrivateConversation({user: list.members[i].id}, function(err,convo) {
+                        convo.say("Its Cats Time :heart_eyes_cat: !!");
+                        convo.say("Try typing `@cats_bot help` to find out how I can help Catsing.");
+                    });
+                }
+            }
+
+        });
+        bot.reply(message, "On it..");
+    }
+    else {
+        bot.reply(message, "You are not authorized to spam ;)");
+    }
+
 });
 
 // controller.hears(['attachment'], ['direct_message', 'direct_mention'], function (bot, message) {
@@ -444,7 +471,7 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
 
                     });
 
-                    slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in & your creds have been saved");
+                    slashCommand.replyPrivateDelayed(message, firstName + " " + lastName + " you have successfully logged-in");
                     break;
 
                 case 401 :
