@@ -195,9 +195,8 @@ controller.on('slash_command', function (slashCommand, message) {
                     slashCommand.replyPrivate(message, "Attempting to add your hours to cats..", function() {
                         controller.storage.users.get(message.user, function(err, user) {
                             if (user && user.userName && user.password) {
-                                var loginSuccess = true;
-                                loginSuccess = performLogin(slashCommand, message, user.userName, user.password);
-                                if (loginSuccess) {
+                                var returnStatusCode = performLogin(slashCommand, message, user.userName, user.password);
+                                if (returnStatusCode === 200) {
                                     var comment = "";
                                     for (var i = 5; i < text.length; i++) {
                                         comment += text[i] + " ";
@@ -455,10 +454,7 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
                     slashCommand.replyPrivateDelayed(message, "could not login for some reason = " + jsonData.message);
 
             }
-        });
-        res.on('end', function () {
-            console.log("Response",res);
-            console.log("Request",req);
+            return httpstatus;
         });
     });
     req.on('error', (e) => {
