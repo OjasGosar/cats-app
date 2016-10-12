@@ -457,7 +457,8 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword)
             }
         });
         res.on('end', function () {
-            console.log("Response.Data:",res.data);
+            console.log("Response",res);
+            console.log("Request",req);
         });
     });
     req.on('error', (e) => {
