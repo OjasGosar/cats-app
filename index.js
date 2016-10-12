@@ -205,26 +205,30 @@ controller.hears(['help'], 'direct_message,direct_mention', function (bot, messa
   bot.reply(message, help)
 });
 
-controller.hears(['reminder'], 'direct_message, direct_mention', function (bot, message) {
+controller.hears(['reminder'], 'direct_message,direct_mention', function (bot, message) {
     if (message.user == 'U2K8XK03Z' || message.user == 'U23RT8WQ4') {
+        bot.reply(message, "On it..");
+
         bot.api.users.list({
 
         }, function(err, list) {
             if (err) {
-                bot.botkit.log('Failed to get users list :(', err);
+                console.log('Failed to get users list :(', err);
             }
-            for (var i = 0; i < list.members.length; i++) {
+            else {
+                console.log('users list :', list);
+                for (var i = 0; i < list.members.length; i++) {
 
-                if(list.members[i].is_bot == false) {
-                    bot.startPrivateConversation({user: list.members[i].id}, function(err,convo) {
-                        convo.say("Its Cats Time :heart_eyes_cat: !!");
-                        convo.say("Try typing `@cats_bot help` to find out how I can help Catsing.");
-                    });
+                    if(list.members[i].is_bot == false) {
+                        bot.startPrivateConversation({user: list.members[i].id}, function(err,convo) {
+                            convo.say("Its Cats Time :heart_eyes_cat: !!");
+                            convo.say("Try typing `@cats_bot help` to find out how I can help Catsing.");
+                        });
+                    }
                 }
             }
 
         });
-        bot.reply(message, "On it..");
     }
     else {
         bot.reply(message, "You are not authorized to spam ;)");
