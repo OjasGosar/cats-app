@@ -20,7 +20,7 @@ if (process.env.MONGOLAB_URI) {
 
 config.debug = true;
 config.logLevel = 7;
-retry: Infinity;
+config.retry = Infinity;
 
 var controller = Botkit.slackbot(config);
 
