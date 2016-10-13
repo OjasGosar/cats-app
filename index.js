@@ -241,23 +241,18 @@ function getCurrentTimestamp() {
 function performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, incomingSid, incomingDefaultActivity) {
     var options = {
         host: process.env.CATS_HOST,
-        //'cats.arvato-systems.de'
         path: process.env.POST_TIME_PATH,
-        //'/gui4cats-webapi/api/times'
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
             'Timestamp': getCurrentTimestamp(),
             'Consumer-Id': process.env.CONSUMER_ID,
-            //'CATSmobile-client',
             'Consumer-Key': process.env.CONSUMER_KEY,
-            // 'C736938F-02FC-4804-ACFE-00E20E21D198',
             'Version': '1.0',
             'Connection': 'keep-alive',
             'User-Agent': 'Mozilla/5.0',
             'x-fallback-origin': process.env.FALLBACK_ORIGIN,
-            //'https://mobilecats.arvato-systems.de',
             'Cache-Control': 'no-cache',
             'Accept-Language': 'en',
             'sid': incomingSid
@@ -309,9 +304,8 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword,
     var lastName = null;
     var defaultActivity = null;
     var options = {
-        host: 'cats.arvato-systems.de',
+        host: process.env.CATS_HOST,
         path: process.env.LOGIN_PATH,
-        //'/gui4cats-webapi/api/users'
         method: 'GET',
         headers: {
             'Accept': 'application/json',
