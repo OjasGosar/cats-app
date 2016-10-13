@@ -2,16 +2,36 @@ name: Cats App for BeepBoop
 description: A Cats App that makes catsing easy!!
 avatar: resources/avatar.png
 config:
-# - name: CLIENT_ID
-#   friendly_name: Client ID
-#   info: Client ID for Slack App
-#   type: text
-#   global: true
-# - name: CLIENT_SECRET
-#   friendly_name: Client Secret
-#   info: Client Secret for Slack App
-#   type: secret
-#   global: true
+- name: CATS_HOST
+  friendly_name: CATS_HOST
+  info: host for cats
+  type: secret
+  global: true
+- name: POST_TIME_PATH
+  friendly_name: POST_TIME_PATH
+  info: path for posting time
+  type: secret
+  global: true
+- name: LOGIN_PATH
+  friendly_name: LOGIN_PATH
+  info: path for login
+  type: secret
+  global: true
+- name: CONSUMER_ID
+  friendly_name: CONSUMER_ID
+  info: CONSUMER_ID
+  type: secret
+  global: true
+- name: CONSUMER_KEY
+  friendly_name: CONSUMER_KEY
+  info: CONSUMER_KEY
+  type: secret
+  global: true
+- name: FALLBACK_ORIGIN
+  friendly_name: FALLBACK_ORIGIN
+  info: FALLBACK_ORIGIN
+  type: secret
+  global: true
 - name: VERIFICATION_TOKEN
   friendly_name: Verification Token
   info: verification token for Slack App

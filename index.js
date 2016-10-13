@@ -240,19 +240,24 @@ function getCurrentTimestamp() {
 
 function performPostTime(slashCommand, message, incomingDate, incomingOrder, incomingSuborder, incomingHours, formattedComment, incomingSid, incomingDefaultActivity) {
     var options = {
-        host: 'cats.arvato-systems.de',
-        path: '/gui4cats-webapi/api/times',
+        host: process.env.CATS_HOST,
+        //'cats.arvato-systems.de'
+        path: process.env.POST_TIME_PATH,
+        //'/gui4cats-webapi/api/times'
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json; charset=utf-8',
             'Timestamp': getCurrentTimestamp(),
-            'Consumer-Id': 'CATSmobile-client',
-            'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
+            'Consumer-Id': process.env.CONSUMER_ID,
+            //'CATSmobile-client',
+            'Consumer-Key': process.env.CONSUMER_KEY,
+            // 'C736938F-02FC-4804-ACFE-00E20E21D198',
             'Version': '1.0',
             'Connection': 'keep-alive',
             'User-Agent': 'Mozilla/5.0',
-            'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
+            'x-fallback-origin': process.env.FALLBACK_ORIGIN,
+            //'https://mobilecats.arvato-systems.de',
             'Cache-Control': 'no-cache',
             'Accept-Language': 'en',
             'sid': incomingSid
@@ -305,7 +310,8 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword,
     var defaultActivity = null;
     var options = {
         host: 'cats.arvato-systems.de',
-        path: '/gui4cats-webapi/api/users',
+        path: process.env.LOGIN_PATH,
+        //'/gui4cats-webapi/api/users'
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -313,12 +319,12 @@ function performLogin(slashCommand, message, incomingUserName, incomingPassword,
             'User': incomingUserName,
             'Password': incomingPassword,
             'Timestamp': getCurrentTimestamp(),
-            'Consumer-Id': 'CATSmobile-client',
-            'Consumer-Key': 'C736938F-02FC-4804-ACFE-00E20E21D198',
+            'Consumer-Id': process.env.CONSUMER_ID,
+            'Consumer-Key': process.env.CONSUMER_KEY,
             'Version': '1.0',
             'Connection': 'keep-alive',
             'User-Agent': 'Mozilla/5.0',
-            'x-fallback-origin': 'https://mobilecats.arvato-systems.de',
+            'x-fallback-origin': process.env.FALLBACK_ORIGIN,
             'Cache-Control': 'no-cache',
             'Accept-Language': 'en'
         }
