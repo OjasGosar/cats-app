@@ -31,7 +31,7 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
 });
 
 
-var help = "I can help you forget the pain around Cats :slightly_smiling_face:" +
+var help = "I can help you forget the pain around Cats :cats_bot:" +
                 "\nTry typing `/cats saveCredentials <username> <password>` to save credentials & test login" +
                 "\nTry typing `/cats addTime <date in format DD> <order> <sub-order> <hours> <comment>` to book time" + 
                 "\nTry typing `@cats_bot reminder` to remind everyone in the team to book time" + 
