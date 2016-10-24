@@ -292,7 +292,9 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
     });
 
     var subOrder = (!(incomingSuborder == 'na') ? '' : ',"suborderid":"'+incomingSuborder+'"');
-    req.write('{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'"'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}');
+    var reqData = '{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'"'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}';
+    console.log("Request Data: ", reqData);
+    req.write(reqData);
     req.end();
 
 }
