@@ -92,7 +92,7 @@ controller.on('slash_command', function (slashCommand, message) {
                                     else {
                                         var incomingDate = date;
                                         var incomingOrder = text[2];
-                                        var incomingSuborder = text[2] + "-" + text[3];
+                                        var incomingSuborder = text[3];
                                         var incomingHours = text[4];
                                         var formattedComment = comment.substring(0,50);
                                         var postTimeSuccess = true;
@@ -291,7 +291,7 @@ function performPostTime(slashCommand, message, incomingDate, incomingOrder, inc
         return false;;
     });
 
-    var subOrder = (!(incomingSuborder == 'na') ? '' : ',"suborderid":"'+incomingSuborder+'"');
+    var subOrder = ((incomingSuborder == 'na') ? '' : ',"suborderid":"'+incomingOrder+'-'+incomingSuborder+'"');
     var reqData = '{"date":"'+incomingDate+'","workingHours":"'+incomingHours+'","comment":"'+formattedComment+'","orderid":"'+incomingOrder+'"'+subOrder+',"activityid":"'+incomingDefaultActivity+'"}';
     console.log("Request Data: ", reqData);
     req.write(reqData);
