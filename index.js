@@ -21,6 +21,7 @@ if (process.env.MONGOLAB_URI) {
 config.debug = true;
 config.logLevel = 7;
 config.retry = Infinity;
+config.interactive_replies = true;
 
 var controller = Botkit.slackbot(config);
 
@@ -122,6 +123,72 @@ controller.on('slash_command', function (slashCommand, message) {
             }   
 
             break;
+        
+        case "/poller":
+            var pollText = message.text.split(os.EOL).map((it) => { return it.trim() })
+            //message.text.trim().split(/\r?\n/);
+            if (!pollText[0]) {
+                slashCommand.replyPrivate(message, "Please provide a question..");
+                break;
+            }
+            if (!(pollText.length > 1) || pollText.length > 16) {
+                slashCommand.replyPrivate(message, "You may only provide 15 options. Here is what you entered: " + message.text);
+                break;
+            }
+            var question = pollText[0];
+            var actions = []
+            for (var i = 1; i < lines.length; i++) {
+                var answer = lines[i]
+                actions.push({
+                  name: 'answer',
+                  text: answer,
+                  type: 'button',
+                  value: answer,
+                  style: 'default'
+                })
+            }
+            var attachments = []
+            actions.forEach((action, num) => {
+              var idx = Math.floor(num / 5)
+              if (!attachments[idx]) {
+                attachments[idx] = {
+                  text: '',
+                  fallback: question,
+                  callback_id: 'poll_callback',
+                  color: '#78449b',
+                  actions: []
+                }
+              }
+              attachments[idx].actions.push(action)
+            })
+            
+            var bottomActions = [{ name: 'resurrect', text: ':arrow_double_down: Resurrect', type: 'button', value: 'resurrect', style: 'default' }]
+
+            attachments.push({
+                text: '',
+                fallback: 'move to the bottom',
+                callback_id: 'poll_callback',
+                actions: bottomActions
+            })
+
+            slashCommand.api.users.info({
+                user: message.user
+            }, function(err, userInfo) {
+                if (err) {
+                    slashCommand.botkit.log('Failed to get channel info :(', err);
+                    slashCommand.replyPrivate(message, "Sorry, something went wrong. Try again?");
+                }
+                else {
+                    attachments[0].author_name = `asked by ${userInfo.user.profile.real_name || userInfo.user.name}`
+                    attachments[0].author_icon = userInfo.user.profile.image_24
+                    slashCommand.replyPublic(message, {
+                        text: question,
+                        attachments: attachments
+                    });
+                }
+            });
+            break;
+
         default:
             slashCommand.replyPublic(message, "I'm afraid I don't know how to " + message.command + " " + message.text + " yet.");
 
