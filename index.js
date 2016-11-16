@@ -21,6 +21,7 @@ if (process.env.MONGOLAB_URI) {
 config.debug = true;
 config.logLevel = 7;
 config.retry = Infinity;
+config.hostname = '0.0.0.0';
 
 var controller = Botkit.slackbot(config);
 
