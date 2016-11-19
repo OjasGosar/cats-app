@@ -47,7 +47,7 @@ controller.on('slash_command', function (slashCommand, message) {
         case "/cats": 
             
             // but first, let's make sure the token matches!
-            if (message.token !== process.env.VERIFICATION_TOKEN) return; //just ignore it.
+            //if (message.token !== process.env.VERIFICATION_TOKEN) return; //just ignore it.
 
             var text = message.text.trim().split(" ");
             switch (text[0]) {
